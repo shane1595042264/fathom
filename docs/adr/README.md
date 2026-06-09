@@ -22,3 +22,4 @@ settled questions or lose the reasoning behind a shift.
 | [0005](0005-process-design-first.md) | Process: brainstorm + design doc + ADR before building | Accepted |
 | [0006](0006-backrooms-ip-and-the-narrator.md) | Pivot to Backrooms + the omniscient Narrator (top-down 2D, hybrid IP, Both) | Accepted (structure amended by 0007) |
 | [0007](0007-roguelike-infinite-strangers-corpserun-llm-boss.md) | Roguelike core: infinite runs, randomized strangers, corpse-run, LLM final boss | Accepted |
+| [0008](0008-immersive-sim-survival-systems.md) | Immersive-sim survival layer: destructible terrain, crafting, RPG stats, encumbrance | Accepted |

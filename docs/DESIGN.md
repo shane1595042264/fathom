@@ -1,8 +1,11 @@
 # HE KNOWS YOU'RE HERE — Design Document
 
-> **Status: LOCKED concept** (ADR-0006) + **roguelike core** (ADR-0007).
+> **Status: LOCKED concept** (ADR-0006) + **roguelike core** (ADR-0007) + **immersive-sim survival layer** (ADR-0008).
 > Engine: native **C# / MonoGame**. Working title: **"He Knows You're Here — A Backrooms Game."**
-> The Narrator deep-dive lives in [`NARRATOR.md`](NARRATOR.md). Decision log: [`adr/`](adr/).
+> **Genre:** a top-down 2D Backrooms **survival-immersive-sim roguelike** with a learning narrator-boss —
+> *FATHOM's hunt with a Vintage-Story-shaped fear-tax economy.* The Narrator deep-dive lives in
+> [`NARRATOR.md`](NARRATOR.md); the survival/immersive-sim systems in [`SYSTEMS.md`](SYSTEMS.md).
+> Decision log: [`adr/`](adr/).
 
 ## Elevator pitch
 > A top-down Backrooms **roguelike** where every run you're a different random stranger who fell
@@ -179,6 +182,22 @@ under its own SA notice; **CI lint** rejects a skin missing attribution or refer
 
 ---
 
+## ✦ Survival & immersive-sim systems (the freedom layer) — see [`SYSTEMS.md`](SYSTEMS.md)
+Destructible everything, salvage→materials, biome resources, crafting, D&D ability scores, and a
+weighted infinite backpack — all designed so **freedom feeds the hunt.** The five-lock thesis:
+every act of empowerment is metered through the *one* currency the predator already consumes —
+**noise into `lastHeard`.** (1) **Loud:** mining/crafting are the loudest sustained acts; tougher
+walls are louder. (2) **Slow + still:** channeled mining surrenders your only defense (mobility).
+(3) **Weight is the leash:** a heavy haul drops you below the learned predator's speed *and* makes
+you louder — `CapacityKg = 8 + 6×STR`. (4) **The wall bites back:** the boss re-pours concrete you
+dug ("I poured that concrete myself"). (5) **The rarest craft forces the fight:** boss-counter
+materials drop only from entities. **Anti-tunnel:** five overlapping defenses + a generation-time
+guarantee that the straightest start→exit vector carries a depth-scaled indestructible spine — so
+*digging is a tactical flank, never a route to the exit.* **Profile integrity:** a single
+`StrangerNormalizer` in front of every `Observe*` call (speed as a fraction of body-max, etc.) keeps
+the watcher learning the **human**, not the body's stat block — a CI-asserted contract. Full detail,
+material tables, recipes, and the minimal-vs-post-launch split are in **[`SYSTEMS.md`](SYSTEMS.md)**.
+
 ## 6. The Concierge — the LLM final boss
 **Concept:** after the gate, you no-clip into one persistent arena — a single Grid the boss **owns and
 rewrites live.** Not a DPS race: a **navigation/expression duel.** The room is his body; reaching the
@@ -243,24 +262,36 @@ add `Seal`/regenerate), PlayerProfile (extend), EntityAI (from `AdaptivePredator
 Load/Save/Repair pattern). **New:** BehaviorTracker + GameEvent bus, NarratorDirector, VoiceService,
 LlmBackend (behind `IDirector`/`INarratorVoiceSource`), CampaignDirector/RunManager, Steamworks.NET.
 
-## 8. Scope / phase plan (honest, from the real current state)
-- **P0 — Wire the foundation into a real loop.** AdaptivePredator + PlayerProfile into `Update`; one
-  hunting entity; live observation; death state + a between-run Dossier screen; seed the Grid from the run
-  seed. *Deliverable: one room where the monster demonstrably learns you across restarts.*
-- **P1 — Single-run vertical slice of the infinite engine.** `LevelDefinition = {skin, archetype,
-  modifiers, seed}`; 3 archetypes; chained seeded rooms with a branch choice. Profile normalized by
-  body-max from day one. *A single tense Backrooms-roguelike run.*
-- **P2 — Roguelike meta + strangers + corpse-run.** Stranger generator; the persistence split; CorpseDrop
-  + weighted re-haunt recovery; Hades-style hub spend (odds only); trait-channel EMA discount.
-- **P3 — Roster breadth + campaign + the gate.** Remaining archetypes, modifier deck, skin format +
-  attribution-as-data + CI lint, ~6 landmarks + ~24 skins with Narrator packs, the gate, the campaign's
-  fixed order + false-ending reveal.
-- **P4 — The boss, deterministic first.** Grid mutability, `IDirector`, Executor + Validator,
-  PredictabilityScore, the 4 phases. Ship the **ScriptedConcierge** — a beatable, on-tone finale with NO
-  LLM. *The shippable floor.*
-- **P5 — Ship v1.0 (deterministic), then LLM as a post-launch upgrade.** Polish, audio, accessibility,
-  Steam, **tune the unpredictability win to feel fair** (the big feel gamble), IP/legal sign-off. Then add
-  the bundled grammar-constrained `LLMDirector` behind the same interface + pure-procedural churn + NG+ Heat.
+## 8. Scope / phase plan (honest, hunt-first — *feasible as a roadmap, reckless as one milestone*)
+The full vision is genuinely Caves-of-Qud / Vintage-Story territory — a multi-year effort. It ships
+only as **thin, hunt-first vertical slices.** Critically, the native build is *still* an M1 render
+demo (it doesn't yet reference the predator/profile), so **P0 is a real prerequisite, not done.**
+- **P0 — Wire the thesis into native (blocks everything).** Connect `AdaptivePredator` to the `Grid`
+  (LOS + pathing), inject footsteps into `lastHeard`, drive the five `Observe*` sinks, call
+  `ComputeTarget`. *Exit: a stranger can be hunted and intercepted natively.* The four design passes all
+  assume this loop exists; it doesn't.
+- **P1 — Profile-integrity gate (do-or-die, before any stat/weight code).** Build the
+  `StrangerNormalizer` as a hard boundary in front of every `Observe*`; land the CI assertion (two
+  extreme bodies, identical human action → identical profile deltas). Wire 3 stats (STR/DEX/CON) +
+  fixed-Satchel encumbrance (weight→speed + weight→noise) *through* the normalizer.
+- **P2 — Destructible substrate + minimal craft + single-run slice.** `byte[] Mat`/`short[] Hp` + the
+  one version-bumping mutation method (`Wall==(Mat!=Air)`); channeled mining→`lastHeard`;
+  gate-then-throughput tools; the generation-time anti-tunnel assertion; one habitat, ~4 materials, ~6
+  recipes; `LevelDefinition = {skin, archetype, modifiers, seed}`; full-drop corpse cache + weight HUD.
+  **The playtest milestone where noise balance is tuned against the real predator.**
+- **P3 — Roguelike content body.** Stranger generator + persistence split + weighted re-haunt corpse
+  recovery + Hades-style hub (odds only); remaining archetypes + modifier deck + skin format +
+  attribution-as-data + CI lint; ~6 handcrafted landmarks + ~24 skins with Narrator packs; the gate;
+  the curated campaign's fixed order + false-ending reveal.
+- **P4 — Scripted boss terrain duel (ship candidate).** Grid mutability (from P2) + `IDirector` +
+  Executor + **Validator** (reachability after *every* edit, build budget, fuzz-tested against
+  softlocks); `PredictabilityScore`; the 4 phases; BossFlesh. **Ship the MVP here on the deterministic
+  ScriptedConcierge — a complete, on-tone finale with NO LLM.**
+- **P5 — Ship v1.0, then immersive-sim breadth + LLM as post-launch.** Polish, audio, accessibility,
+  Steam, **tune the unpredictability win to feel fair** (the big feel gamble), IP/legal sign-off. Then
+  layer in *only if the core loop proves fun*: the live `LLMDirector` (same interface), Tier-3
+  anomalous/profile-active economy, more biomes, salvage-everything, WIS/INT depth, NG+ Heat — each an
+  independent slice, none a launch dependency.
 
 ## 9. Biggest risks
 - **Scope** (now a multi-year team-scale project, tracked against an M1 demo) → the deterministic
@@ -272,6 +303,15 @@ LlmBackend (behind `IDirector`/`INarratorVoiceSource`), CampaignDirector/RunMana
 - **Narrator writing quality** → authored bank first; LLM optional; see `NARRATOR.md`.
 - **CC-BY-SA at roster scale** → attribution-as-data + fenced folder + CI lint + counsel before EA.
 - **LLM bundle cost + degrade** → deterministic by default; local-LLM opt-in download; cloud never bundled.
+- **False foundation** (newly surfaced, highest) → the native build is an M1 render demo; the hunt loop
+  isn't wired in. *Freeze all freedom-layer work until P0 is green*, or every system is built on sand.
+- **Noise balance is the whole game** (survival layer) → a burst-dig must be survivable but a sustained
+  tunnel / heavy haul suicidal; only tunable in P2 playtest vs the real predator.
+- **Cozy-drift / genre betrayal** → lossy salvage, draining pockets, the workbench pins you, pillar 1 as a
+  veto: optimal play stays "mine the minimum, descend," never "homestead."
+- **Boss softlock / Validator gaps** → reachability check after *every* terrain edit (player and boss) +
+  rate-limited build budget + a fuzz test before the boss ships.
+- *(Full survival-layer risk list in [`SYSTEMS.md`](SYSTEMS.md) §7.)*
 
 ## 10. Open questions
 1. **Boss access:** repeatable attempt once gated, or a one-shot you stage a loadout for? (Shapes the meta-economy.)
@@ -281,8 +321,13 @@ LlmBackend (behind `IDirector`/`INarratorVoiceSource`), CampaignDirector/RunMana
 5. **Corpse `p_haunt` / decay N:** playtest-tuned; single config source.
 6. **Port vs rebuild:** how much of the browser prototype's feel (oxygen, compass, HUD, audio) ports to native.
 7. **Campaign/infinite shared save:** one ledger or a sealed first-time experience?
-8. **Accessibility of the reveal's EQ-unmask** for deaf/HoH players (captions-only). 
+8. **Accessibility of the reveal's EQ-unmask** for deaf/HoH players (captions-only).
+9. **P0 sequencing** *(now the critical-path question)* — keep shipping the JS prototype while we
+   rebuild native, or freeze JS and go native-first? Everything downstream depends on this.
+- *(Survival-layer open questions — half-mined wall persistence, mining-as-profile-signal,
+  encumbrance normalization formula, dodge-vs-evasion, workbench persistence — in [`SYSTEMS.md`](SYSTEMS.md) §7.)*
 
 ## Decision log
-[`adr/`](adr/) — 0004 (engine), 0005 (process), 0006 (concept), **0007 (roguelike core)** accepted;
-0002 (echolocation) → the Sonar-Dark archetype; 0003 (learning model + LLM) → powers the Narrator + the boss.
+[`adr/`](adr/) — 0004 (engine), 0005 (process), 0006 (concept), **0007 (roguelike core)**,
+**0008 (immersive-sim survival layer)** accepted; 0002 (echolocation) → the Sonar-Dark archetype;
+0003 (learning model + LLM) → powers the Narrator + the boss.
