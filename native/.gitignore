@@ -1,0 +1,5 @@
+# .NET / MonoGame build output
+bin/
+obj/
+shots/
+*.user
