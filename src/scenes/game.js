@@ -64,8 +64,17 @@
       this._threat = 0;
       this.style = 1; this._blindTimer = 0;
       this.pingsThisDepth = 0;
+      this.tutorial = (this.depth === 1 && !this.meta.tutorialDone);
+      this._tutStep = 0; this._tutT = 0; this._tutQuiet = false; this._tutExit = false;
       this.juice.flash(0.3, '127,233,255');
-      this.hud.cue(`DEPTH ${String(this.depth).padStart(2, '0')} — recover ${this.world.beacons.length} beacons`, 1);
+      this.hud.cue(`DEPTH ${String(this.depth).padStart(2, '0')} — recover ${this.world.beacons.length} transponders`, 1);
+      // Atmospheric crew-log fragment / milestone (flavor only).
+      if (F.LORE) {
+        const log = F.LORE.depthLogs[this.depth];
+        if (log) this.hud.cue(log, 0.6);
+        const ms = F.LORE.milestone && F.LORE.milestone[this.depth];
+        if (ms) this.hud.cue(ms, 0.85);
+      }
       F.Audio.startAmbience();
       if (F.SteamAPI) { F.SteamAPI.richPresence('Diving — depth ' + this.depth); F.SteamAPI.onDepthReached(this.depth); }
     }
@@ -102,6 +111,7 @@
         F.Audio.setTension(tension);
         this.juice.update(dt);
         this.hud.update(dt);
+        if (this.tutorial) this._tutorial(dt);
       } else if (this.state === 'dying') {
         this.endTimer -= dt;
         this.sonar.update(dt);
@@ -122,6 +132,20 @@
         const k = F.M.clamp((elapsed - 0.5) / 1.0, 0, 1);
         if (k > 0) F.UI.title(ctx, this.deathCause === 'drowned' ? 'DROWNED' : 'TAKEN', F.VIEW.w / 2, F.VIEW.h / 2, 56, k * 0.9);
       }
+    }
+
+    // First-run teaching prompts. Shows the ping hint until you ping, then the
+    // objective, then quiet-swim (when the Angler nears) and the descent. Runs only
+    // on depth 1 until you complete it once (meta.tutorialDone).
+    _tutorial(dt) {
+      this._tutT -= dt;
+      if (this.pingsThisDepth === 0) {
+        if (this._tutT <= 0) { this.hud.cue('TAP SPACE / CLICK to PING — your only way to see', 1); this._tutT = 1.6; }
+        return;
+      }
+      if (this._tutStep === 0) { this._tutStep = 1; this.hud.cue('follow the gold signal — recover the transponders', 1); }
+      if (!this._tutQuiet && this.juice.threat > 0.25) { this._tutQuiet = true; this.hud.cue('hold SHIFT to swim silently — it hunts by sound', 1); }
+      if (this.exitOpen && !this._tutExit) { this._tutExit = true; this.hud.cue('descent open — follow the green signal to the hatch', 1); }
     }
 
     // ---- win/lose checks ----
@@ -154,6 +178,7 @@
       const airBank = Math.floor(this.oxygen.air * F.CONFIG.score.airBonusPerSecAtDescent);
       this.score += Math.floor(F.CONFIG.score.perDepth * this.style) + airBank;
       if (this.pingsThisDepth === 0 && F.SteamAPI) F.SteamAPI.unlock(F.SteamAPI.ACH.NO_PING_DESCENT);
+      if (this.depth === 1) this.meta.tutorialDone = true; // they've learned the loop
       this.depth++;
       this.meta.deepest = Math.max(this.meta.deepest || 0, this.depth);
       F.Storage.saveMeta(this.meta);

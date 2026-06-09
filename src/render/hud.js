@@ -23,6 +23,47 @@
       for (let i = this.cues.length - 1; i >= 0; i--) { this.cues[i].t -= dt; if (this.cues[i].t <= 0) this.cues.splice(i, 1); }
     }
 
+    // Diegetic objective marker: your suit picks up the transponder "signal" (gold);
+    // once all are recovered it homes on the descent hatch (green). If the target is
+    // off-screen it becomes an edge chevron pointing the way — so you always know
+    // where to go, and can route around the Angler instead of feeling trapped.
+    _drawCompass(ctx, game) {
+      let target = null, col = '255,209,102';
+      if (game.exitOpen && game.world.exit) { target = game.world.exit; col = '124,255,178'; }
+      else {
+        let best = Infinity;
+        for (const b of game.world.beacons) {
+          if (b.collected) continue;
+          const d = F.M.dist(game.player.x, game.player.y, b.x, b.y);
+          if (d < best) { best = d; target = b; }
+        }
+      }
+      if (!target || !game.renderer) return;
+      const cam = game.renderer.cam, W = F.VIEW.w, H = F.VIEW.h;
+      const sx = target.x - cam.x, sy = target.y - cam.y;
+      const cx = W / 2, cy = H / 2;
+      let dx = sx - cx, dy = sy - cy;
+      const mag = Math.hypot(dx, dy) || 1; dx /= mag; dy /= mag;
+      const pulse = 0.55 + 0.45 * Math.sin(this.time * 4);
+      // Edge ring inset (avoids the top/bottom HUD bars).
+      const t = Math.min((W / 2 - 54) / Math.max(1e-3, Math.abs(dx)), (H / 2 - 96) / Math.max(1e-3, Math.abs(dy)));
+      ctx.save();
+      if (mag < t - 6) {
+        // On-screen: a soft ring on the target itself.
+        ctx.globalAlpha = 0.5 + pulse * 0.3;
+        ctx.strokeStyle = `rgba(${col},0.8)`; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(sx, sy, 18 + pulse * 4, 0, F.M.TAU); ctx.stroke();
+      } else {
+        // Off-screen: a chevron at the edge pointing the way.
+        const ex = cx + dx * t, ey = cy + dy * t, ang = Math.atan2(dy, dx);
+        ctx.translate(ex, ey); ctx.rotate(ang);
+        ctx.globalAlpha = 0.55 + pulse * 0.35;
+        ctx.fillStyle = `rgba(${col},0.95)`; ctx.shadowColor = `rgba(${col},0.7)`; ctx.shadowBlur = 12;
+        ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-7, -8); ctx.lineTo(-2, 0); ctx.lineTo(-7, 8); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    }
+
     draw(ctx, game) {
       const W = F.VIEW.w, H = F.VIEW.h;
       ctx.save();
@@ -69,7 +110,10 @@
       }
       ctx.font = '300 12px "Segoe UI", sans-serif';
       ctx.fillStyle = 'rgba(215,227,234,0.5)';
-      ctx.fillText(game.exitOpen ? 'FIND THE DESCENT' : `RECOVER BEACONS  ${got}/${total}`, W / 2, 50);
+      ctx.fillText(game.exitOpen ? 'DESCENT OPEN — FIND THE HATCH' : `RECOVER TRANSPONDERS  ${got}/${total}`, W / 2, 50);
+
+      // Signal compass — always shows where to go (this is how you win).
+      this._drawCompass(ctx, game);
 
       // Bottom-center: oxygen bar.
       const ox = game.oxygen;

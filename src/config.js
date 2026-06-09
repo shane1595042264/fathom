@@ -112,7 +112,16 @@
       beaconsBase: 3,        // collect this many to open the descent at depth 1
       beaconsPerDepth: 1,
       airPocketsBase: 5,
-      braidChance: 0.16      // fraction of dead-ends opened into loops (less maze-y, more arena)
+      // The world is an OPEN, looping wreck — not a thin maze. Heavy braiding
+      // removes almost every dead-end so there is always a way around the Angler,
+      // and open rooms give you space to dodge it. This is the key to never being
+      // "cornered on the only path".
+      braidChance: 0.85,     // fraction of dead-ends opened into loops
+      roomsBase: 5,          // open chambers carved into the structure
+      roomsPerDepth: 0.5,
+      roomMinSize: 2,
+      roomMaxSize: 4,
+      startRoom: 3           // size of the open starting chamber
     },
 
     // ---- Scoring ----

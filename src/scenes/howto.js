@@ -10,7 +10,7 @@
     update(dt) {
       this.t += dt; this.demo += dt;
       const I = F.Input;
-      if (I.pressed('confirm') || I.pointerClicked()) { F.Audio.uiSelect(); F.SM.go('game', { reset: true }); }
+      if (I.pressed('confirm') || I.pointerClicked()) { F.Audio.uiSelect(); F.startRun(); }
       if (I.pressed('back') || I.pressed('pause')) { F.Audio.uiSelect(); F.SM.go('menu'); }
     }
     draw(ctx) {
@@ -32,7 +32,7 @@
         ['PING (see)', 'Space / Click / RT  —  the loudest thing you can do'],
         ['SWIM SILENT', 'Hold Shift  —  slow, but the Angler can\'t hear you'],
         ['BREATHE', 'Rest on a green vent to refill air  —  surfacing is loud'],
-        ['GOAL', 'Recover the gold beacons, then find the descent'],
+        ['GOAL', 'Recover the gold transponders, then reach the descent hatch'],
         ['LISTEN', 'It groans from its real direction. The louder, the closer.']
       ];
       ctx.textBaseline = 'middle';

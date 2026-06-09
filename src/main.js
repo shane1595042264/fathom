@@ -36,6 +36,13 @@
   window.addEventListener('resize', resize);
   resize();
 
+  // Start a fresh run — routes first-time players through the intro crawl once.
+  F.startRun = function () {
+    const m = F.Storage.loadMeta();
+    if (!m.seenIntro && F.SM.scenes.intro) F.SM.go('intro');
+    else F.SM.go('game', { reset: true });
+  };
+
   // ---- boot gate ----
   let started = false;
   function startGame() {

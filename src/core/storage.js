@@ -50,7 +50,7 @@
 
     loadMeta() {
       const raw = safeGet(KEY_META);
-      const base = { runs: 0, deaths: 0, deepest: 0, beaconsTotal: 0, seenIntro: false };
+      const base = { runs: 0, deaths: 0, deepest: 0, beaconsTotal: 0, seenIntro: false, tutorialDone: false };
       if (!raw) return base;
       try { return Object.assign(base, JSON.parse(raw)); } catch (e) { return base; }
     },

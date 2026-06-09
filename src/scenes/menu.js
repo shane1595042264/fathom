@@ -22,7 +22,7 @@
 
     act(a) {
       F.Audio.uiSelect();
-      if (a === 'play') F.SM.go('game', { reset: true });
+      if (a === 'play') F.startRun();
       else if (a === 'howto') F.SM.go('howto', { from: 'menu' });
       else if (a === 'settings') F.SM.go('settings', { from: 'menu' });
       else if (a === 'quit' && window.fathomNative) window.fathomNative.quit();

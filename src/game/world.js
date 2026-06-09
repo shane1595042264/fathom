@@ -63,7 +63,26 @@
       };
       carve(1, 1);
 
-      // Braid: open a fraction of dead-ends to create loops (arena feel).
+      // Open the starting chamber so you never spawn in a 1-wide dead-end.
+      const sr = C.startRoom;
+      for (let ty = 1; ty < 1 + sr && ty < rows - 1; ty++)
+        for (let tx = 1; tx < 1 + sr && tx < cols - 1; tx++)
+          g[this.idx(tx, ty)] = 0;
+
+      // Carve scattered open rooms — space to dodge the Angler and circle around it
+      // instead of being trapped in a single corridor.
+      const roomCount = Math.round(C.roomsBase + (depth - 1) * C.roomsPerDepth);
+      for (let r = 0; r < roomCount; r++) {
+        const rw = rng.int(C.roomMinSize, C.roomMaxSize);
+        const rh = rng.int(C.roomMinSize, C.roomMaxSize);
+        const rx = rng.int(1, Math.max(1, cols - 1 - rw));
+        const ry = rng.int(1, Math.max(1, rows - 1 - rh));
+        for (let ty = ry; ty < ry + rh && ty < rows - 1; ty++)
+          for (let tx = rx; tx < rx + rw && tx < cols - 1; tx++)
+            g[this.idx(tx, ty)] = 0;
+      }
+
+      // Braid: open most dead-ends to create loops (open, navigable structure).
       for (let ty = 1; ty < rows - 1; ty++) {
         for (let tx = 1; tx < cols - 1; tx++) {
           if (g[this.idx(tx, ty)] !== 0) continue;
