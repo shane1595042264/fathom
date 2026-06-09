@@ -1,0 +1,25 @@
+// FATHOM — SteamPipe app build script (template).
+// Usage: steamcmd +login <account> +run_app_build <full path to this file> +quit
+// Replace APPID and DEPOTID with your real values from Steamworks.
+"AppBuild"
+{
+	"AppID" "480"            // <-- your numeric App ID
+	"Desc"  "FATHOM build"   // shown in Steamworks > Builds
+
+	"BuildOutput" "..\\steam_build_output\\"   // logs + chunk cache (gitignored)
+	"ContentRoot" "..\\release\\win-unpacked\\" // electron-builder output to upload
+
+	"Depots"
+	{
+		"481"   // <-- your Windows depot ID
+		{
+			"FileMapping"
+			{
+				"LocalPath" "*"
+				"DepotPath" "."
+				"recursive" "1"
+			}
+			"FileExclusion" "*.pdb"
+		}
+	}
+}

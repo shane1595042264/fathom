@@ -1,0 +1,23 @@
+# Dependencies / build output
+node_modules/
+dist/
+build/
+release/
+*.log
+
+# Electron / packaging
+out/
+.cache/
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+
+# Steam
+steam_build_output/
+*.vdf.local
+
+# Local dev artifacts
+*.local

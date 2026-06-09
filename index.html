@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="FATHOM — a minimalist sonar-horror arcade game. You are blind in the deep. Ping to see. But it hears every ping." />
+  <title>FATHOM</title>
+  <style>
+    :root {
+      --ink: #05070a;
+      --sonar: #7fe9ff;
+      --blood: #ff3b3b;
+      --bone: #d7e3ea;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      cursor: none;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--bone);
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+    }
+    #stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at center, #04080d 0%, #000 75%);
+    }
+    /* The game renders at a fixed internal resolution and is scaled to fit. */
+    #game {
+      display: block;
+      image-rendering: auto;
+      background: #000;
+      box-shadow: 0 0 120px rgba(0, 0, 0, 0.9);
+    }
+    /* A faint scanline / grain overlay drawn over the canvas for texture. */
+    #fx {
+      position: absolute;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.0;
+    }
+    #boot {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.4rem;
+      background: #000;
+      color: var(--bone);
+      z-index: 50;
+      transition: opacity 0.6s ease;
+    }
+    #boot h1 {
+      font-weight: 200;
+      letter-spacing: 1.6rem;
+      font-size: clamp(2.4rem, 8vw, 5rem);
+      text-indent: 1.6rem;
+      color: var(--bone);
+      text-shadow: 0 0 30px rgba(127, 233, 255, 0.25);
+    }
+    #boot p { font-weight: 300; letter-spacing: 0.25rem; opacity: 0.55; font-size: 0.85rem; text-transform: uppercase; }
+    #boot button {
+      margin-top: 0.8rem;
+      background: transparent;
+      border: 1px solid rgba(215, 227, 234, 0.35);
+      color: var(--bone);
+      padding: 0.9rem 2.6rem;
+      letter-spacing: 0.4rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    #boot button:hover { background: rgba(127, 233, 255, 0.1); border-color: var(--sonar); color: #fff; }
+    #boot .warn {
+      max-width: 32rem;
+      text-align: center;
+      font-size: 0.72rem;
+      line-height: 1.6;
+      letter-spacing: 0.06rem;
+      opacity: 0.4;
+      text-transform: none;
+    }
+    .hidden { opacity: 0 !important; pointer-events: none !important; }
+    .gone { display: none !important; }
+    #rotate {
+      position: fixed; inset: 0; z-index: 80; display: none;
+      align-items: center; justify-content: center; background: #000;
+      color: var(--bone); text-align: center; padding: 2rem; letter-spacing: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game" width="960" height="600"></canvas>
+  </div>
+
+  <!-- Boot / content + photosensitivity warning gate. Also satisfies the
+       autoplay-policy requirement that audio start on a user gesture. -->
+  <div id="boot">
+    <h1>FATHOM</h1>
+    <p>You are blind in the deep</p>
+    <button id="boot-start" type="button">Descend</button>
+    <p class="warn">
+      Headphones strongly recommended. This game contains sudden loud sounds,
+      flashing light, and moments intended to frighten. It is played almost entirely
+      in darkness. Photosensitivity and reduced-flashing options are in Settings.
+    </p>
+  </div>
+
+  <div id="rotate">Please rotate your device to landscape.</div>
+
+  <!-- ============ Engine core (no dependencies, loaded in order) ============ -->
+  <script src="src/config.js"></script>
+  <script src="src/core/math.js"></script>
+  <script src="src/core/rng.js"></script>
+  <script src="src/core/events.js"></script>
+  <script src="src/core/storage.js"></script>
+  <script src="src/core/input.js"></script>
+  <script src="src/core/audio.js"></script>
+
+  <!-- ============ Game systems ============ -->
+  <script src="src/game/world.js"></script>
+  <script src="src/game/sonar.js"></script>
+  <script src="src/game/player.js"></script>
+  <script src="src/game/entity.js"></script>
+  <script src="src/game/oxygen.js"></script>
+  <script src="src/game/progression.js"></script>
+
+  <!-- ============ Rendering ============ -->
+  <script src="src/render/postfx.js"></script>
+  <script src="src/render/renderer.js"></script>
+  <script src="src/render/hud.js"></script>
+
+  <!-- ============ Platform (Steam shim — no-op on web) ============ -->
+  <script src="src/steam/steam.js"></script>
+
+  <!-- ============ Scenes / UI ============ -->
+  <script src="src/scenes/scene.js"></script>
+  <script src="src/scenes/menu.js"></script>
+  <script src="src/scenes/settings.js"></script>
+  <script src="src/scenes/howto.js"></script>
+  <script src="src/scenes/pause.js"></script>
+  <script src="src/scenes/game.js"></script>
+  <script src="src/scenes/gameover.js"></script>
+
+  <!-- ============ Bootstrap ============ -->
+  <script src="src/main.js"></script>
+</body>
+</html>

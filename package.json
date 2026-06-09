@@ -1,0 +1,66 @@
+{
+  "name": "fathom",
+  "productName": "FATHOM",
+  "version": "1.0.0",
+  "description": "You are blind in the deep. Ping to see. It hears every ping. A minimalist sonar-horror arcade game.",
+  "author": "FATHOM",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "electron/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "build:single": "powershell -ExecutionPolicy Bypass -File tools/build-singlefile.ps1",
+    "serve": "powershell -ExecutionPolicy Bypass -File tools/serve.ps1 -Port 8137"
+  },
+  "fathom": {
+    "steamAppId": "480",
+    "_comment": "480 is Valve's Spacewar test AppID — replace with YOUR numeric App ID before release."
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "optionalDependencies": {
+    "steamworks.js": "^0.4.0"
+  },
+  "build": {
+    "appId": "com.fathom.game",
+    "productName": "FATHOM",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "index.html",
+      "src/**/*",
+      "electron/**/*",
+      "steam/steam_appid.txt",
+      "!**/*.map"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "artifactName": "FATHOM-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Game"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.games"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
