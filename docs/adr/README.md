@@ -23,3 +23,4 @@ settled questions or lose the reasoning behind a shift.
 | [0006](0006-backrooms-ip-and-the-narrator.md) | Pivot to Backrooms + the omniscient Narrator (top-down 2D, hybrid IP, Both) | Accepted (structure amended by 0007) |
 | [0007](0007-roguelike-infinite-strangers-corpserun-llm-boss.md) | Roguelike core: infinite runs, randomized strangers, corpse-run, LLM final boss | Accepted |
 | [0008](0008-immersive-sim-survival-systems.md) | Immersive-sim survival layer: destructible terrain, crafting, RPG stats, encumbrance | Accepted |
+| [0009](0009-creatures-senses-movement-voice.md) | Creature layer: any-species characters, multi-sense perception, movement verbs, privacy-first voice input | Accepted |

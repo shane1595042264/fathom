@@ -1,10 +1,12 @@
 # HE KNOWS YOU'RE HERE — Design Document
 
-> **Status: LOCKED concept** (ADR-0006) + **roguelike core** (ADR-0007) + **immersive-sim survival layer** (ADR-0008).
+> **Status: LOCKED** — concept (ADR-0006) + roguelike core (ADR-0007) + immersive-sim survival layer
+> (ADR-0008) + creature layer (ADR-0009).
 > Engine: native **C# / MonoGame**. Working title: **"He Knows You're Here — A Backrooms Game."**
-> **Genre:** a top-down 2D Backrooms **survival-immersive-sim roguelike** with a learning narrator-boss —
-> *FATHOM's hunt with a Vintage-Story-shaped fear-tax economy.* The Narrator deep-dive lives in
-> [`NARRATOR.md`](NARRATOR.md); the survival/immersive-sim systems in [`SYSTEMS.md`](SYSTEMS.md).
+> **Genre:** a top-down 2D Backrooms **survival-immersive-sim roguelike** where every run you ARE a
+> randomized *creature* (human, dog, cat, …) — *FATHOM's hunt with a Vintage-Story-shaped fear-tax
+> economy.* Deep-dives: the Narrator in [`NARRATOR.md`](NARRATOR.md); survival systems in
+> [`SYSTEMS.md`](SYSTEMS.md); creatures/senses/movement/voice in [`CHARACTERS.md`](CHARACTERS.md).
 > Decision log: [`adr/`](adr/).
 
 ## Elevator pitch
@@ -198,6 +200,20 @@ guarantee that the straightest start→exit vector carries a depth-scaled indest
 the watcher learning the **human**, not the body's stat block — a CI-asserted contract. Full detail,
 material tables, recipes, and the minimal-vs-post-launch split are in **[`SYSTEMS.md`](SYSTEMS.md)**.
 
+## ✦ Creatures, senses & voice (the body layer) — see [`CHARACTERS.md`](CHARACTERS.md)
+**Any living thing can fall into the Backrooms.** Each run you ARE a randomized **species** — a
+pure-data `CreatureKit` (size · sense loadout · movement verbs · `canCraft` · a specialty + a hard
+limitation). **Human** crafts but is nearly blind in the dark; **Dog** can't craft but smells
+entities/clues at range and sprints (loudly); **Cat** is silent and climbs. The body is a costume —
+**the watcher still profiles the human** (the `StrangerNormalizer` divides out the whole body), and
+asymmetry is the replay engine. **Sonar is demoted to one sense:** Sight (screen-space cone) /
+Hearing (sound blooms) / Scent (a low-res decaying trail buffer) / **Echo** (the in-repo sonar reveal,
+reused verbatim, owned by the Bat) are reveal passes on the existing two-buffer pipeline. **Movement**
+(Walk/Sprint/Crawl/Hide/Climb…) and **Hide** all meter through stamina + the noise channel. And —
+**opt-in, local-only, post-launch** — a free offline **Whisper** lets the Narrator *hear and remember
+what you say out loud* (the purest "it knows YOU," kept behind hard privacy + content-safety
+guardrails; the game is fully playable with no mic). Full detail in **[`CHARACTERS.md`](CHARACTERS.md)**.
+
 ## 6. The Concierge — the LLM final boss
 **Concept:** after the gate, you no-clip into one persistent arena — a single Grid the boss **owns and
 rewrites live.** Not a DPS race: a **navigation/expression duel.** The room is his body; reaching the
@@ -270,15 +286,25 @@ demo (it doesn't yet reference the predator/profile), so **P0 is a real prerequi
   (LOS + pathing), inject footsteps into `lastHeard`, drive the five `Observe*` sinks, call
   `ComputeTarget`. *Exit: a stranger can be hunted and intercepted natively.* The four design passes all
   assume this loop exists; it doesn't.
-- **P1 — Profile-integrity gate (do-or-die, before any stat/weight code).** Build the
-  `StrangerNormalizer` as a hard boundary in front of every `Observe*`; land the CI assertion (two
-  extreme bodies, identical human action → identical profile deltas). Wire 3 stats (STR/DEX/CON) +
-  fixed-Satchel encumbrance (weight→speed + weight→noise) *through* the normalizer.
+- **P1 — Profile-integrity gate (do-or-die, before any stat/body code).** Build the
+  `StrangerNormalizer` as a hard boundary in front of every `Observe*`, baselined per **body**
+  (CreatureKit + stats + weight); land the CI assertion — two *wildly different* bodies (Dog/Cat),
+  identical human action → identical profile deltas. Wire 3 stats (STR/DEX/CON) + fixed-Satchel
+  encumbrance (weight→speed + weight→noise) and stub the **voice channel** (full-weight, body-invariant)
+  *through* the normalizer.
 - **P2 — Destructible substrate + minimal craft + single-run slice.** `byte[] Mat`/`short[] Hp` + the
   one version-bumping mutation method (`Wall==(Mat!=Air)`); channeled mining→`lastHeard`;
   gate-then-throughput tools; the generation-time anti-tunnel assertion; one habitat, ~4 materials, ~6
   recipes; `LevelDefinition = {skin, archetype, modifiers, seed}`; full-drop corpse cache + weight HUD.
-  **The playtest milestone where noise balance is tuned against the real predator.**
+  **The playtest milestone where noise balance is tuned against the real predator.** `canCraft` now
+  gates the mine/craft slice (Human only); non-craft bodies must **route** the anti-tunnel spine, so the
+  generation reachability assertion guarantees a routing solution for the *smallest/weakest* body, and
+  movement becomes a noise-event state model (replacing the old quiet-speed hack).
+- **P-creature — species / senses / movement core (between P2 and P3).** The 3-species `CreatureKit[]`
+  table (Human/Dog/Cat), the sense depositors (sonar reused verbatim + Hearing + the new Scent buffer +
+  a screen-space Sight cone), the 5 movement verbs (Walk/Sprint/Crawl/Hide/Climb) wired to stamina +
+  `lastHeard`, per-run seeded species roll from the unlocked pool. *Climb is the cut line if the flat
+  grid is at risk → defer.* Depends on P1's normalizer + P2's noise model.
 - **P3 — Roguelike content body.** Stranger generator + persistence split + weighted re-haunt corpse
   recovery + Hades-style hub (odds only); remaining archetypes + modifier deck + skin format +
   attribution-as-data + CI lint; ~6 handcrafted landmarks + ~24 skins with Narrator packs; the gate;
@@ -290,7 +316,9 @@ demo (it doesn't yet reference the predator/profile), so **P0 is a real prerequi
 - **P5 — Ship v1.0, then immersive-sim breadth + LLM as post-launch.** Polish, audio, accessibility,
   Steam, **tune the unpredictability win to feel fair** (the big feel gamble), IP/legal sign-off. Then
   layer in *only if the core loop proves fun*: the live `LLMDirector` (same interface), Tier-3
-  anomalous/profile-active economy, more biomes, salvage-everything, WIS/INT depth, NG+ Heat — each an
+  anomalous/profile-active economy, more biomes, salvage-everything, WIS/INT depth, NG+ Heat, the
+  **opt-in local-Whisper voice** subsystem, more **species** (Bat/Rat/Hollow + flight/echo), and the
+  vertical **Climb** layer — each an
   independent slice, none a launch dependency.
 
 ## 9. Biggest risks
@@ -311,7 +339,13 @@ demo (it doesn't yet reference the predator/profile), so **P0 is a real prerequi
   veto: optimal play stays "mine the minimum, descend," never "homestead."
 - **Boss softlock / Validator gaps** → reachability check after *every* terrain edit (player and boss) +
   rate-limited build budget + a fuzz test before the boss ships.
-- *(Full survival-layer risk list in [`SYSTEMS.md`](SYSTEMS.md) §7.)*
+- **Profile pollution across species** (do-or-die, multiplied) → bodies differ far more than stat
+  blocks; the per-body `StrangerNormalizer` + CI gate (Dog/Cat identical-delta) lands in P1 first.
+- **Microphone = trust/reputation liability** → default-OFF, local-only, never transmitted, REC
+  indicator, `VoiceSanitizer`, complete no-mic fallback; kept post-launch so it's never rushed.
+- **Unwinnable runs for non-craft bodies** → the anti-tunnel reachability assertion must guarantee a
+  *routing* solution for the smallest/weakest body; spawns respect size/gap passability.
+- *(Full risk lists in [`SYSTEMS.md`](SYSTEMS.md) §7 and [`CHARACTERS.md`](CHARACTERS.md) §7.)*
 
 ## 10. Open questions
 1. **Boss access:** repeatable attempt once gated, or a one-shot you stage a loadout for? (Shapes the meta-economy.)
@@ -324,10 +358,11 @@ demo (it doesn't yet reference the predator/profile), so **P0 is a real prerequi
 8. **Accessibility of the reveal's EQ-unmask** for deaf/HoH players (captions-only).
 9. **P0 sequencing** *(now the critical-path question)* — keep shipping the JS prototype while we
    rebuild native, or freeze JS and go native-first? Everything downstream depends on this.
-- *(Survival-layer open questions — half-mined wall persistence, mining-as-profile-signal,
-  encumbrance normalization formula, dodge-vs-evasion, workbench persistence — in [`SYSTEMS.md`](SYSTEMS.md) §7.)*
+- *(Survival-layer open questions in [`SYSTEMS.md`](SYSTEMS.md) §7; creature-layer questions —
+  species roll vs choice, Climb-vs-flat-grid, voice-noise-vs-talking, session vs cross-run VoiceMemory,
+  species-unlock-vs-boss-gate — in [`CHARACTERS.md`](CHARACTERS.md) §7.)*
 
 ## Decision log
 [`adr/`](adr/) — 0004 (engine), 0005 (process), 0006 (concept), **0007 (roguelike core)**,
-**0008 (immersive-sim survival layer)** accepted; 0002 (echolocation) → the Sonar-Dark archetype;
-0003 (learning model + LLM) → powers the Narrator + the boss.
+**0008 (immersive-sim survival layer)**, **0009 (creature layer)** accepted; 0002 (echolocation) →
+now the Bat's Echo sense (one modality); 0003 (learning model + LLM) → powers the Narrator + the boss.
