@@ -1,6 +1,6 @@
 # ADR-0003: The "it learns you" adaptive nemesis + optional local LLM voice
 
-- **Status:** Proposed
+- **Status:** Accepted, folded into ADR-0006 (the learning model + LLM now power the NARRATOR rather than only the monster's pathfinding)
 - **Date:** 2026-06-09
 - **Deciders:** team
 

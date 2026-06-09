@@ -1,6 +1,6 @@
 # ADR-0002: Core mechanic — sonar echolocation ("ping to see, it hears you")
 
-- **Status:** Accepted (under review during the design brainstorm)
+- **Status:** Superseded by ADR-0006 (echolocation demoted from core to a per-level mechanic for dark levels)
 - **Date:** 2026-06-09
 - **Deciders:** team
 

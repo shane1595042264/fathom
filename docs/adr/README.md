@@ -16,7 +16,8 @@ settled questions or lose the reasoning behind a shift.
 | # | Decision | Status |
 |---|----------|--------|
 | [0001](0001-browser-prototype-zero-deps.md) | Zero-dependency browser prototype first | Superseded by 0004 |
-| [0002](0002-core-mechanic-sonar-echolocation.md) | Core mechanic: sonar echolocation ("ping to see, it hears you") | Accepted (under review in brainstorm) |
-| [0003](0003-adaptive-learning-nemesis-and-local-llm.md) | The "it learns you" adaptive nemesis + optional local LLM voice | Proposed |
+| [0002](0002-core-mechanic-sonar-echolocation.md) | Core mechanic: sonar echolocation ("ping to see, it hears you") | Superseded by 0006 |
+| [0003](0003-adaptive-learning-nemesis-and-local-llm.md) | The "it learns you" adaptive model + optional local LLM voice | Accepted (folded into 0006) |
 | [0004](0004-engine-native-csharp-monogame.md) | Engine: native C# / MonoGame (not web, not UE5) | Accepted |
 | [0005](0005-process-design-first.md) | Process: brainstorm + design doc + ADR before building | Accepted |
+| [0006](0006-backrooms-ip-and-the-narrator.md) | Pivot to Backrooms + the omniscient Narrator (top-down 2D, hybrid IP, Both) | Accepted |
